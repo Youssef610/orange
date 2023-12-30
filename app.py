@@ -63,8 +63,8 @@ headers = {
 
 
 data = {
-    "number":f"{"01222470261"}",
-    "password":f"{"200888Aa@"}",
+    "number":"01222470261",
+    "password":"200888Aa@",
     "submit": "Submit",
   }
 response = requests.post('http://www.ahmed-net.rf.gd/500MB.php', headers=headers,
