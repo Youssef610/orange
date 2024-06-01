@@ -25,7 +25,7 @@ def get500mb(message,num):
     
       bot.reply_to(message, respose)
     except:
-         bot.reply_to(message, "تاكد من ارسال الباسورد بشكل صحيح")
+         bot.reply_to(message, "رقم الهاتف او الباسورد خطأ")
    
 
 def sendMessage(number,pss):
